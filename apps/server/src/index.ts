@@ -9,6 +9,8 @@ import checkinsRouter from "./routes/checkins.js";
 import agentRouter from "./routes/agent.js";
 import gamificationRouter from "./routes/gamification.js";
 import summaryRouter from "./routes/summary.js";
+import chatRouter from "./routes/chat.js";
+import saveRouter from "./routes/save.js";
 
 const app = express();
 
@@ -29,6 +31,8 @@ app.use("/api/checkins", checkinsRouter);
 app.use("/api/agent", agentRouter);
 app.use("/api/gamification", gamificationRouter);
 app.use("/api/summary", summaryRouter);
+app.use("/api/chat", chatRouter);
+app.use("/api/save", saveRouter);
 
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

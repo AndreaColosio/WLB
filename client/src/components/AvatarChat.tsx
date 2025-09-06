@@ -1,28 +1,31 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useGamification } from '../hooks/useApi';
-
-interface Message {
-  id: string;
-  content: string;
-  sender: 'user' | 'avatar';
-  timestamp: Date;
-  type: 'text' | 'voice' | 'video';
-}
-
-interface WellnessInsight {
-  type: 'journal' | 'gratitude' | 'checkin' | 'streak';
-  content: string;
-  generated: boolean;
-}
+import { useConversationState, ConversationMessage, MessageAnalysis } from '../hooks/useConversationState';
+import ResultCards from './ResultCards';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { Mic, MicOff, Video, VideoOff, Send, Loader2 } from 'lucide-react';
 
 const AvatarChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [wellnessInsights, setWellnessInsights] = useState<WellnessInsight[]>([]);
-  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: gamificationData } = useGamification();
+  
+  const {
+    state,
+    messages,
+    currentAnalysis,
+    isRecording,
+    recordingType,
+    addMessage,
+    updateMessage,
+    startRecording,
+    stopRecording,
+    startAnalysis,
+    showResults,
+    saveResults,
+    skipResults,
+  } = useConversationState();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,19 +39,16 @@ const AvatarChat: React.FC = () => {
     // Welcome message
     if (messages.length === 0) {
       setTimeout(() => {
-        const welcomeMessage: Message = {
-          id: 'welcome-1',
+        addMessage({
           content: "Hi there! I'm your personal wellness companion. I'm here to chat about your day, help you reflect, and keep track of your well-being. How are you feeling right now?",
           sender: 'avatar',
-          timestamp: new Date(),
           type: 'text'
-        };
-        setMessages([welcomeMessage]);
+        });
       }, 1000);
     }
-  }, [messages.length]);
+  }, [messages.length, addMessage]);
 
-  const generateAvatarResponse = async (userMessage: string): Promise<{ response: string; insights: WellnessInsight[] }> => {
+  const analyzeMessage = async (messageText: string): Promise<MessageAnalysis> => {
     try {
       // Prepare conversation history for API
       const conversationHistory = messages.map(msg => ({
@@ -57,73 +57,84 @@ const AvatarChat: React.FC = () => {
         timestamp: msg.timestamp.toISOString()
       }));
 
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/chat/ingest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: userMessage,
-          conversationHistory: conversationHistory.slice(-6) // Last 6 messages for context
+          text: messageText,
+          conversationHistory: conversationHistory.slice(-6), // Last 6 messages for context
+          timeOfDay: getTimeOfDay()
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Chat API error');
+        throw new Error('Message analysis API error');
       }
 
       const data = await response.json();
-      return {
-        response: data.response,
-        insights: data.insights || []
-      };
+      return data.analysis;
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error('Message analysis error:', error);
+      // Fallback analysis
       return {
-        response: "I'm here with you. Sometimes it helps just to share what's on your mind.",
-        insights: []
+        intents: ['journal'],
+        journal: {
+          title: 'Daily Reflection',
+          body: messageText,
+          tags: ['general']
+        },
+        reflection: "I'm here with you. Sometimes it helps just to share what's on your mind.",
       };
     }
   };
 
-  const processWellnessContent = (insights: WellnessInsight[]) => {
-    // Add insights from AI analysis to local state
-    if (insights.length > 0) {
-      setWellnessInsights(prev => [...prev, ...insights]);
-    }
+  const getTimeOfDay = (): 'morning' | 'midday' | 'evening' => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 18) return 'midday';
+    return 'evening';
   };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      content: newMessage.trim(),
-      sender: 'user',
-      timestamp: new Date(),
-      type: 'text'
-    };
-
-    setMessages(prev => [...prev, userMessage]);
+    const messageText = newMessage.trim();
     setNewMessage('');
-    setIsTyping(true);
 
-    // Generate avatar response
-    const { response: responseContent, insights } = await generateAvatarResponse(userMessage.content);
-    
-    const avatarMessage: Message = {
-      id: `avatar-${Date.now()}`,
-      content: responseContent,
-      sender: 'avatar',
-      timestamp: new Date(),
+    // Add user message
+    const userMessage = addMessage({
+      content: messageText,
+      sender: 'user',
       type: 'text'
-    };
+    });
 
-    setIsTyping(false);
-    setMessages(prev => [...prev, avatarMessage]);
-    
-    // Process wellness content from AI analysis
-    processWellnessContent(insights);
+    // Start analysis
+    startAnalysis();
+
+    try {
+      // Analyze the message
+      const analysis = await analyzeMessage(messageText);
+      
+      // Add avatar response
+      addMessage({
+        content: analysis.reflection,
+        sender: 'avatar',
+        type: 'text',
+        analysis
+      });
+
+      // Show results for user to review
+      showResults(analysis);
+    } catch (error) {
+      console.error('Error processing message:', error);
+      addMessage({
+        content: "I'm here with you. Sometimes it helps just to share what's on your mind.",
+        sender: 'avatar',
+        type: 'text'
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -134,8 +145,40 @@ const AvatarChat: React.FC = () => {
   };
 
   const handleVoiceToggle = () => {
-    setIsListening(!isListening);
-    // Voice functionality would be implemented here
+    if (isRecording && recordingType === 'voice') {
+      stopRecording();
+    } else {
+      startRecording('voice');
+    }
+  };
+
+  const handleVideoToggle = () => {
+    if (isRecording && recordingType === 'video') {
+      stopRecording();
+    } else {
+      startRecording('video');
+    }
+  };
+
+  const handleAcceptResults = async (acceptedData: Partial<MessageAnalysis>) => {
+    try {
+      // Save the accepted data to the backend
+      const response = await fetch('/api/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(acceptedData),
+      });
+
+      if (response.ok) {
+        saveResults();
+      } else {
+        console.error('Failed to save data');
+      }
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
   };
 
   return (
@@ -163,7 +206,7 @@ const AvatarChat: React.FC = () => {
           </div>
           <div className="statItem">
             <span className="statIcon">📝</span>
-            <span className="statValue">{wellnessInsights.filter(i => i.type === 'journal').length}</span>
+            <span className="statValue">{messages.filter(m => m.analysis?.journal).length}</span>
             <span className="statLabel">entries</span>
           </div>
         </div>
@@ -192,15 +235,14 @@ const AvatarChat: React.FC = () => {
             </div>
           ))}
           
-          {isTyping && (
+          {state === 'analyzing' && (
             <div className="messageWrapper avatar">
               <div className="messageContent">
                 <div className="messageAvatar">🌟</div>
                 <div className="messageBubble typing">
-                  <div className="typingIndicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-gray-600">Analyzing your message...</span>
                   </div>
                 </div>
               </div>
@@ -211,47 +253,58 @@ const AvatarChat: React.FC = () => {
         </div>
       </div>
 
+      {/* Result Cards */}
+      {state === 'reviewing' && currentAnalysis && (
+        <div className="resultCardsContainer">
+          <ResultCards
+            analysis={currentAnalysis}
+            onAccept={handleAcceptResults}
+            onSkip={skipResults}
+          />
+        </div>
+      )}
+
       {/* Input Area */}
       <div className="inputContainer">
         <div className="inputWrapper">
-          <button 
-            className={`voiceButton ${isListening ? 'listening' : ''}`}
+          <Button
+            variant={isRecording && recordingType === 'voice' ? 'destructive' : 'outline'}
+            size="sm"
             onClick={handleVoiceToggle}
-            data-testid="voice-button"
+            disabled={state === 'analyzing' || state === 'reviewing'}
           >
-            <i className={`fas fa-${isListening ? 'stop' : 'microphone'}`}></i>
-          </button>
+            {isRecording && recordingType === 'voice' ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
           
-          <textarea
-            className="messageInput"
+          <Button
+            variant={isRecording && recordingType === 'video' ? 'destructive' : 'outline'}
+            size="sm"
+            onClick={handleVideoToggle}
+            disabled={state === 'analyzing' || state === 'reviewing'}
+          >
+            {isRecording && recordingType === 'video' ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+          </Button>
+          
+          <Textarea
+            className="messageInput flex-1"
             placeholder="Share what's on your mind..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             rows={1}
-            data-testid="message-input"
+            disabled={state === 'analyzing' || state === 'reviewing'}
           />
           
-          <button 
-            className="sendButton"
+          <Button
             onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
-            data-testid="send-button"
+            disabled={!newMessage.trim() || state === 'analyzing' || state === 'reviewing'}
+            size="sm"
           >
-            <i className="fas fa-paper-plane"></i>
-          </button>
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Background Wellness Insights */}
-      <div className="wellnessInsights">
-        <div className="insightsToggle">
-          <button className="insightsButton">
-            <i className="fas fa-chart-line"></i>
-            <span className="insightsBadge">{wellnessInsights.length}</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
