@@ -1,0 +1,843 @@
+/* CSS Variables following the design reference */
+:root {
+  --radius: 8px;
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --primary: hsl(142.1, 76.2%, 36.3%);
+  --primary-foreground: hsl(355.7, 100%, 97.3%);
+  --secondary: hsl(42.9, 100%, 62%);
+  --secondary-foreground: hsl(210, 40%, 2%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 28rem;
+  margin: 0 auto;
+  background-color: var(--card);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Header Styles */
+.header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+  padding: 1rem 1.5rem;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.streak {
+  text-align: right;
+}
+
+.streakContent {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.streakNumber {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.streakText {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Tab Navigation */
+.tabNavigation {
+  position: sticky;
+  top: 72px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.tabContainer {
+  display: flex;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.tab:hover {
+  color: var(--foreground);
+}
+
+.tabActive {
+  border-bottom: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.tabIcon {
+  font-size: 0.75rem;
+}
+
+/* Main Content */
+.main {
+  padding-bottom: 1.5rem;
+}
+
+.tabContent {
+  padding: 0 1.5rem;
+}
+
+/* Card Styles */
+.card {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Agent Card */
+.agentCard {
+  background: linear-gradient(135deg, hsl(142.1, 76.2%, 36.3%, 0.05) 0%, hsl(42.9, 100%, 62%, 0.05) 100%);
+  border: 1px solid hsl(142.1, 76.2%, 36.3%, 0.1);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.agentCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.agentCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.agentCardIcon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: hsl(142.1, 76.2%, 36.3%, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.agentCardTitle h3 {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+}
+
+.agentCardTitle p {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.agentCardSections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agentCardSection h4 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+}
+
+.agentCardSection p {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.agentPractice {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* Balance Sliders */
+.balanceCheckin {
+  background-color: var(--card);
+}
+
+.balanceTitle {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+}
+
+.slidersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sliderGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sliderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sliderLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.sliderValue {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.slider {
+  width: 100%;
+  height: 0.5rem;
+  border-radius: var(--radius);
+  background: linear-gradient(to right, #ef4444 0%, #f59e0b 25%, #eab308 50%, #84cc16 75%, #22c55e 100%);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--primary);
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--primary);
+  cursor: pointer;
+}
+
+.balanceScore {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.balanceScoreContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.balanceScoreLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.balanceScoreValue {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.balanceScoreNumber {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.balanceScoreMax {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* Quick Capture */
+.quickCapture {
+  background-color: var(--card);
+}
+
+.quickCaptureTitle {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+}
+
+.quickCaptureContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: calc(var(--radius) / 2);
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+}
+
+.input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.input:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--primary);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: calc(var(--radius) / 2);
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  resize: none;
+  font-family: inherit;
+}
+
+.textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+.textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--primary);
+}
+
+.suggestions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.suggestionButton {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suggestionButton:hover {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.saveButton {
+  width: 100%;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.75rem;
+  border: none;
+  border-radius: calc(var(--radius) / 2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: hsl(142.1, 76.2%, 32%);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  width: 100%;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  padding: 0.5rem;
+  border: none;
+  border-radius: calc(var(--radius) / 2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background-color: hsl(42.9, 100%, 58%);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.toastContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Section Titles */
+.sectionTitle {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Entries Lists */
+.entriesSection {
+  margin-top: 1.5rem;
+}
+
+.entriesList, .gratitudeList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.entryCard, .gratitudeItem {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.entryCard:hover, .gratitudeItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.entryDate, .gratitudeItemDate {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.entryContent {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.gratitudeItemContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.gratitudeItemText {
+  flex: 1;
+}
+
+.gratitudeItemText p {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+}
+
+/* Gratitude Stats */
+.gratitudeStats {
+  background: linear-gradient(135deg, hsl(42.9, 100%, 62%, 0.05) 0%, hsl(142.1, 76.2%, 36.3%, 0.05) 100%);
+  border: 1px solid hsl(42.9, 100%, 62%, 0.1);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.gratitudeStatsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gratitudeStatsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gratitudeStatsHeader h3 {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+}
+
+.gratitudeStatsHeader p {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.gratitudeStreak {
+  text-align: right;
+}
+
+.gratitudeStreakNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.gratitudeStreakLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.gratitudeCounts {
+  display: flex;
+  gap: 1rem;
+}
+
+.gratitudeCount {
+  text-align: center;
+}
+
+.gratitudeCountNumber {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.gratitudeCountLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Progress Page */
+.weeklyStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.statCard {
+  text-align: center;
+  padding: 0.75rem;
+  background-color: hsl(210, 40%, 96%, 0.5);
+  border-radius: var(--radius);
+}
+
+.statNumber {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Chart */
+.chartContainer {
+  height: 5rem;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+
+.sparkline {
+  width: 100%;
+}
+
+.sparklinePath {
+  stroke: var(--primary);
+  stroke-width: 2;
+  fill: none;
+}
+
+.chartLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.5rem;
+}
+
+/* Badges */
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.badge {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  border: 2px solid;
+}
+
+.badgeEarned {
+  background: linear-gradient(135deg, hsl(42.9, 100%, 62%, 0.15), hsl(42.9, 100%, 62%, 0.05));
+  border-color: var(--secondary);
+}
+
+.badgeUnearned {
+  background: var(--muted);
+  border-color: var(--border);
+  opacity: 0.6;
+}
+
+.badgeIcon {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: var(--secondary);
+}
+
+.badgeUnearned .badgeIcon {
+  color: var(--muted-foreground);
+}
+
+.badgeName {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.badgeUnearned .badgeName {
+  color: var(--muted-foreground);
+}
+
+.badgeStatus {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.25rem;
+}
+
+/* Insights */
+.insightsCard {
+  background: linear-gradient(135deg, hsl(142.1, 76.2%, 36.3%, 0.05) 0%, hsl(42.9, 100%, 62%, 0.05) 100%);
+  border: 1px solid hsl(142.1, 76.2%, 36.3%, 0.1);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.insightsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insightsHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.insightsHeader i {
+  color: var(--primary);
+}
+
+.insightsHeader h3 {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.insightsContent p {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Loading and Empty States */
+.loading {
+  text-align: center;
+  color: var(--muted-foreground);
+  padding: 2rem;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--muted-foreground);
+  padding: 2rem;
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+/* New Entry Content */
+.newEntryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.promptSuggestion {
+  background: hsl(142.1, 76.2%, 36.3%, 0.05);
+  border: 1px solid hsl(142.1, 76.2%, 36.3%, 0.1);
+  border-radius: calc(var(--radius) / 2);
+  padding: 0.75rem;
+}
+
+.promptLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--primary);
+  margin: 0 0 0.25rem;
+}
+
+.promptText {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .app {
+    max-width: 100%;
+  }
+
+  .tabContent {
+    padding: 0 1rem;
+  }
+
+  .card, .agentCard, .gratitudeStats, .insightsCard {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+
+  .header {
+    padding: 1rem;
+  }
+}

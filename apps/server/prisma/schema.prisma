@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+enum EntryType {
+  JOURNAL
+  GRATITUDE
+  CHECKIN
+}
+
+model User {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  displayName   String?
+  settings      Settings?
+  entries       Entry[]
+  checkins      Checkin[]
+  badges        Badge[]
+  weeklyReports WeeklyReport[]
+}
+
+model Settings {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  user              User    @relation(fields: [userId], references: [id])
+  promptStyle       String? // "gentle", "direct"
+  morningWindow     String? // "07:00-09:00"
+  eveningWindow     String? // "20:00-22:00"
+}
+
+model Entry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      EntryType
+  content   String   // free text for JOURNAL or GRATITUDE, JSON string for CHECKIN summary if needed
+  meta      Json?
+  createdAt DateTime @default(now())
+}
+
+model Checkin {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  energy      Int      // 0-10
+  rest        Int      // 0-10
+  focus       Int      // 0-10
+  connection  Int      // 0-10
+  note        String?
+  createdAt   DateTime @default(now())
+}
+
+model Badge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  code      String   // "FIRST_ENTRY", "WEEK_STREAK_7", "GRATITUDE_30"
+  grantedAt DateTime @default(now())
+}
+
+model WeeklyReport {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  weekStart DateTime
+  text      String
+  createdAt DateTime @default(now())
+}

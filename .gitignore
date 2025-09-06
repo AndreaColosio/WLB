@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+apps/*/node_modules/
+
+# Build outputs
+dist/
+apps/*/dist/
+apps/client/build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+apps/*/.env
+apps/*/.env.local
+
+# Database
+apps/server/prisma/dev.sqlite
+apps/server/prisma/dev.sqlite-journal
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
