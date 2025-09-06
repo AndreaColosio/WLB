@@ -6,10 +6,11 @@ import { useAgentCard, useCreateCheckin, useGamification } from '../hooks/useApi
 import styles from '../App.module.css';
 
 interface TodayProps {
+  selectedDate: Date;
   onStreakUpdate: (streak: number) => void;
 }
 
-const Today: React.FC<TodayProps> = ({ onStreakUpdate }) => {
+const Today: React.FC<TodayProps> = ({ selectedDate, onStreakUpdate }) => {
   const [balanceData, setBalanceData] = useState({
     energy: 7,
     rest: 6,

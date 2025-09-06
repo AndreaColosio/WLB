@@ -1,14 +1,14 @@
 import React from 'react';
-import { Tab } from '../App';
+import { View } from '../App';
 import styles from '../App.module.css';
 
 interface TabNavigationProps {
-  activeTab: Tab;
-  onTabChange: (tab: Tab) => void;
+  activeTab: View;
+  onTabChange: (tab: View) => void;
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange }) => {
-  const tabs: { key: Tab; label: string; icon: string }[] = [
+  const tabs: { key: View; label: string; icon: string }[] = [
     { key: 'today', label: 'Today', icon: 'fas fa-home' },
     { key: 'journal', label: 'Journal', icon: 'fas fa-book' },
     { key: 'gratitude', label: 'Gratitude', icon: 'fas fa-heart' },

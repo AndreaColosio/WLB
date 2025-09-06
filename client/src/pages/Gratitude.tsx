@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useEntries, useCreateEntry, useGamification } from '../hooks/useApi';
 import styles from '../App.module.css';
 
-const Gratitude: React.FC = () => {
+interface GratitudeProps {
+  selectedDate: Date;
+}
+
+const Gratitude: React.FC<GratitudeProps> = ({ selectedDate }) => {
   const [newGratitude, setNewGratitude] = useState('');
   const { data: entries, isLoading } = useEntries('GRATITUDE');
   const { data: gamificationData } = useGamification();

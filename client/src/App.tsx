@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import TabNavigation from './components/TabNavigation';
+import Sidebar from './components/Sidebar';
+import CalendarSidebar from './components/CalendarSidebar';
 import Today from './pages/Today';
 import Journal from './pages/Journal';
 import Gratitude from './pages/Gratitude';
@@ -16,51 +17,53 @@ const queryClient = new QueryClient({
   },
 });
 
-export type Tab = 'today' | 'journal' | 'gratitude' | 'progress';
+export type View = 'today' | 'journal' | 'gratitude' | 'progress';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('today');
+  const [activeView, setActiveView] = useState<View>('today');
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [streakDays, setStreakDays] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const renderActiveTab = () => {
-    switch (activeTab) {
+  const renderActiveView = () => {
+    switch (activeView) {
       case 'today':
-        return <Today onStreakUpdate={setStreakDays} />;
+        return <Today selectedDate={selectedDate} onStreakUpdate={setStreakDays} />;
       case 'journal':
-        return <Journal />;
+        return <Journal selectedDate={selectedDate} />;
       case 'gratitude':
-        return <Gratitude />;
+        return <Gratitude selectedDate={selectedDate} />;
       case 'progress':
         return <Progress />;
       default:
-        return <Today onStreakUpdate={setStreakDays} />;
+        return <Today selectedDate={selectedDate} onStreakUpdate={setStreakDays} />;
     }
   };
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="app">
-        <header className="header">
-          <div className="headerContent">
-            <div>
-              <h1 className="title">Balance Agent</h1>
-              <p className="subtitle">Your mindful companion</p>
+        <Sidebar 
+          activeView={activeView} 
+          onViewChange={setActiveView}
+          streakDays={streakDays}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+        
+        <div className="appContent">
+          <CalendarSidebar 
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+            collapsed={sidebarCollapsed}
+          />
+          
+          <main className="mainContent">
+            <div className="contentContainer">
+              {renderActiveView()}
             </div>
-            <div className="streak">
-              <div className="streakContent">
-                <i className="fas fa-fire" style={{ color: '#f59e0b' }}></i>
-                <span className="streakNumber" data-testid="streak-days">{streakDays}</span>
-                <span className="streakText">day streak</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-
-        <main className="main">
-          {renderActiveTab()}
-        </main>
+          </main>
+        </div>
       </div>
     </QueryClientProvider>
   );

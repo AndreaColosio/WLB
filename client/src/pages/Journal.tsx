@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useEntries, useCreateEntry, useAgentCard } from '../hooks/useApi';
 import styles from '../App.module.css';
 
-const Journal: React.FC = () => {
+interface JournalProps {
+  selectedDate: Date;
+}
+
+const Journal: React.FC<JournalProps> = ({ selectedDate }) => {
   const [newEntry, setNewEntry] = useState('');
   const { data: entries, isLoading } = useEntries('JOURNAL');
   const { data: agentCard } = useAgentCard('morning');
