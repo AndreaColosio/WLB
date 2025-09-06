@@ -69,6 +69,173 @@ async function getAgentCard(ctx: AgentContext): Promise<AgentCard> {
   }
 }
 
+// Conversational AI types and functions
+type ConversationMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+};
+
+type WellnessInsight = {
+  type: 'journal' | 'gratitude' | 'checkin' | 'mood';
+  content: string;
+  extractedData?: any;
+  confidence: number;
+};
+
+type ChatResponse = {
+  response: string;
+  insights: WellnessInsight[];
+  mood?: number;
+  energy?: number;
+};
+
+async function processConversation(userMessage: string, conversationHistory: ConversationMessage[] = []): Promise<ChatResponse> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  const model = process.env.OPENAI_MODEL || "gpt-5";
+  
+  if (!apiKey) {
+    return {
+      response: "I'm here to listen and support you. Tell me more about how you're feeling today.",
+      insights: []
+    };
+  }
+
+  try {
+    const client = new OpenAI({ apiKey });
+    
+    // First, generate conversational response
+    const conversationMessages = [
+      {
+        role: "system" as const,
+        content: `You are Sage, a gentle wellness companion. You're having a natural conversation with someone about their day, feelings, and well-being. 
+
+Your role:
+- Be empathetic, warm, and genuinely interested
+- Ask follow-up questions that encourage reflection
+- Gently guide toward gratitude, self-care, and balance
+- Respond naturally like a caring friend who happens to be wise about wellness
+- Keep responses conversational, not clinical
+
+Guidelines:
+- Keep responses to 1-3 sentences
+- Don't be overly cheerful or pushy
+- Listen more than you advise
+- When appropriate, ask about mood, energy, sleep, connections, or gratitude
+- Acknowledge their feelings without trying to "fix" everything`
+      },
+      ...conversationHistory.slice(-6), // Last 6 messages for context
+      { role: "user" as const, content: userMessage }
+    ];
+
+    const conversationResponse = await client.chat.completions.create({
+      model,
+      messages: conversationMessages,
+      temperature: 0.7,
+      max_tokens: 150
+    });
+
+    const agentResponse = conversationResponse.choices[0]?.message?.content ?? "I understand. Tell me more.";
+
+    // Second, analyze for wellness insights
+    const analysisPrompt = `Analyze this conversation message for wellness insights. Extract any mentions of:
+
+User message: "${userMessage}"
+
+Return JSON with an array of insights. Each insight should have:
+- type: "journal" | "gratitude" | "checkin" | "mood"
+- content: the relevant text or extracted information
+- confidence: 0.1-1.0 how confident you are this should be saved
+- extractedData: structured data (mood score 1-10, energy level, etc.)
+
+Examples:
+- "I'm feeling really grateful for my friend's support" → type: "gratitude", content: "grateful for friend's support"
+- "I had a rough day at work, feeling stressed" → type: "mood", extractedData: {mood: 4, energy: 3}
+- "Today I realized I need to set better boundaries" → type: "journal", content: "realized I need to set better boundaries"
+
+Only extract insights with confidence > 0.6. Return empty array if nothing significant.`;
+
+    const analysisResponse = await client.chat.completions.create({
+      model,
+      messages: [
+        { role: "system", content: "You are a wellness content analyzer. Return valid JSON only." },
+        { role: "user", content: analysisPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+      max_tokens: 300
+    });
+
+    const analysisText = analysisResponse.choices[0]?.message?.content ?? '{"insights": []}';
+    const analysisResult = JSON.parse(analysisText);
+    
+    return {
+      response: agentResponse,
+      insights: analysisResult.insights || [],
+      mood: analysisResult.mood,
+      energy: analysisResult.energy
+    };
+    
+  } catch (error) {
+    console.error("Conversation processing error:", error);
+    return {
+      response: "I'm here with you. Sometimes it helps just to share what's on your mind.",
+      insights: []
+    };
+  }
+}
+
+async function saveWellnessInsights(insights: WellnessInsight[], userId: number = 1): Promise<void> {
+  for (const insight of insights) {
+    if (insight.confidence < 0.6) continue;
+    
+    try {
+      switch (insight.type) {
+        case 'journal':
+          await prisma.entry.create({
+            data: {
+              userId,
+              type: 'JOURNAL',
+              content: insight.content,
+              createdAt: new Date()
+            }
+          });
+          break;
+          
+        case 'gratitude':
+          await prisma.entry.create({
+            data: {
+              userId,
+              type: 'GRATITUDE',
+              content: insight.content,
+              createdAt: new Date()
+            }
+          });
+          break;
+          
+        case 'checkin':
+        case 'mood':
+          if (insight.extractedData) {
+            await prisma.checkin.create({
+              data: {
+                userId,
+                energy: insight.extractedData.energy || 5,
+                rest: insight.extractedData.rest || 5,
+                focus: insight.extractedData.focus || 5,
+                connection: insight.extractedData.connection || 5,
+                balanceScore: insight.extractedData.mood || 5,
+                createdAt: new Date()
+              }
+            });
+          }
+          break;
+      }
+    } catch (error) {
+      console.error(`Error saving ${insight.type} insight:`, error);
+    }
+  }
+}
+
 // Helper functions
 function balanceScore(energy: number, rest: number, focus: number, connection: number): number {
   const clamp = (x: number) => Math.max(0, Math.min(10, Math.round(x)));
@@ -321,6 +488,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Gamification error:", error);
       res.status(500).json({ error: "Failed to fetch gamification data" });
+    }
+  });
+
+  // Conversational AI Chat endpoint
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const chatSchema = z.object({
+        message: z.string().min(1),
+        conversationHistory: z.array(z.object({
+          role: z.enum(['user', 'assistant']),
+          content: z.string(),
+          timestamp: z.string()
+        })).optional()
+      });
+
+      const { message, conversationHistory = [] } = chatSchema.parse(req.body);
+      
+      // Ensure demo user exists
+      await prisma.user.upsert({
+        where: { id: DEMO_USER_ID },
+        update: {},
+        create: { id: DEMO_USER_ID, displayName: "Demo" }
+      });
+
+      // Convert history to proper format
+      const history: ConversationMessage[] = conversationHistory.map(msg => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: new Date(msg.timestamp)
+      }));
+
+      // Process conversation with AI
+      const chatResponse = await processConversation(message, history);
+      
+      // Save any wellness insights to database (convert DEMO_USER_ID to number)
+      if (chatResponse.insights.length > 0) {
+        await saveWellnessInsights(chatResponse.insights, parseInt(DEMO_USER_ID) || 1);
+      }
+
+      // Grant badges if new entries were created
+      await grantBadges(DEMO_USER_ID);
+
+      res.json({
+        response: chatResponse.response,
+        insights: chatResponse.insights,
+        mood: chatResponse.mood,
+        energy: chatResponse.energy,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error("Chat processing error:", error);
+      res.status(500).json({ 
+        response: "I'm here to listen. Sometimes it helps just to share what's on your mind.",
+        insights: [],
+        error: "Chat processing failed" 
+      });
+    }
+  });
+
+  // Get conversation insights (for the insights panel)
+  app.get("/api/insights", async (req, res) => {
+    try {
+      const { limit = 10 } = req.query;
+      
+      // Get recent entries that were auto-generated from conversations
+      const recentEntries = await prisma.entry.findMany({
+        where: { userId: DEMO_USER_ID },
+        orderBy: { createdAt: "desc" },
+        take: Number(limit)
+      });
+
+      const recentCheckins = await prisma.checkin.findMany({
+        where: { userId: DEMO_USER_ID },
+        orderBy: { createdAt: "desc" },
+        take: 5
+      });
+
+      const insights = [
+        ...recentEntries.map((entry: any) => ({
+          type: entry.type.toLowerCase(),
+          content: entry.content,
+          timestamp: entry.createdAt,
+          generated: true
+        })),
+        ...recentCheckins.map((checkin: any) => ({
+          type: 'checkin',
+          content: `Balance check-in: Energy ${checkin.energy}/10`,
+          timestamp: checkin.createdAt,
+          generated: true,
+          data: {
+            energy: checkin.energy,
+            rest: checkin.rest,
+            focus: checkin.focus,
+            connection: checkin.connection
+          }
+        }))
+      ];
+
+      // Sort by timestamp
+      insights.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      res.json({ insights: insights.slice(0, Number(limit)) });
+      
+    } catch (error) {
+      console.error("Insights error:", error);
+      res.status(500).json({ error: "Failed to fetch insights" });
     }
   });
 

@@ -48,50 +48,46 @@ const AvatarChat: React.FC = () => {
     }
   }, [messages.length]);
 
-  const generateAvatarResponse = async (userMessage: string): Promise<string> => {
-    // Simulate AI processing with wellness focus
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const responses = [
-      "That sounds really meaningful. Tell me more about what made that moment special for you.",
-      "I can hear that you're processing a lot right now. What's one thing that felt good today?",
-      "That's a beautiful way to look at it. How did that experience change how you're feeling?",
-      "I'm noting that down for your journal. Is there anything you're particularly grateful for right now?",
-      "Your energy seems different today. On a scale of 1-10, how would you rate your overall balance right now?",
-      "That's wonderful progress! I can see how much you've grown. What's supporting you most in this journey?"
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
+  const generateAvatarResponse = async (userMessage: string): Promise<{ response: string; insights: WellnessInsight[] }> => {
+    try {
+      // Prepare conversation history for API
+      const conversationHistory = messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
+        content: msg.content,
+        timestamp: msg.timestamp.toISOString()
+      }));
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          conversationHistory: conversationHistory.slice(-6) // Last 6 messages for context
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Chat API error');
+      }
+
+      const data = await response.json();
+      return {
+        response: data.response,
+        insights: data.insights || []
+      };
+    } catch (error) {
+      console.error('Chat error:', error);
+      return {
+        response: "I'm here with you. Sometimes it helps just to share what's on your mind.",
+        insights: []
+      };
+    }
   };
 
-  const processWellnessContent = (userMessage: string, avatarResponse: string) => {
-    // Simulate AI extracting wellness insights from conversation
-    const insights: WellnessInsight[] = [];
-    
-    if (userMessage.toLowerCase().includes('grateful') || userMessage.toLowerCase().includes('thankful') || userMessage.toLowerCase().includes('appreciate')) {
-      insights.push({
-        type: 'gratitude',
-        content: `Grateful for: ${userMessage}`,
-        generated: true
-      });
-    }
-    
-    if (userMessage.toLowerCase().includes('feel') || userMessage.toLowerCase().includes('mood') || userMessage.toLowerCase().includes('energy')) {
-      insights.push({
-        type: 'checkin',
-        content: `Mood check-in: ${userMessage}`,
-        generated: true
-      });
-    }
-    
-    if (userMessage.length > 50) {
-      insights.push({
-        type: 'journal',
-        content: `Journal entry: ${userMessage}`,
-        generated: true
-      });
-    }
-    
+  const processWellnessContent = (insights: WellnessInsight[]) => {
+    // Add insights from AI analysis to local state
     if (insights.length > 0) {
       setWellnessInsights(prev => [...prev, ...insights]);
     }
@@ -113,7 +109,7 @@ const AvatarChat: React.FC = () => {
     setIsTyping(true);
 
     // Generate avatar response
-    const responseContent = await generateAvatarResponse(userMessage.content);
+    const { response: responseContent, insights } = await generateAvatarResponse(userMessage.content);
     
     const avatarMessage: Message = {
       id: `avatar-${Date.now()}`,
@@ -126,8 +122,8 @@ const AvatarChat: React.FC = () => {
     setIsTyping(false);
     setMessages(prev => [...prev, avatarMessage]);
     
-    // Process wellness content in background
-    processWellnessContent(userMessage.content, responseContent);
+    // Process wellness content from AI analysis
+    processWellnessContent(insights);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
