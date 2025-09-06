@@ -5,14 +5,14 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "cd apps/server && npm run dev",
-    "dev:client": "cd apps/client && npm run dev",
-    "build": "npm run build:server && npm run build:client",
-    "build:server": "cd apps/server && npm run build",
-    "build:client": "cd apps/client && npm run build",
-    "start": "cd apps/server && npm start",
-    "install:all": "npm install && cd apps/server && npm install && cd ../client && npm install",
-    "check": "cd apps/server && npm run check && cd ../client && npm run check"
+    "dev:server": "cd apps/server; npm run dev",
+    "dev:client": "cd apps/client; npm run dev",
+    "build": "npm run build:server; npm run build:client",
+    "build:server": "cd apps/server; npm run build",
+    "build:client": "cd apps/client; npm run build",
+    "start": "cd apps/server; npm start",
+    "install:all": "npm install; cd apps/server; npm install; cd ../client; npm install",
+    "check": "cd apps/server; npm run check; cd ../client; npm run check"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

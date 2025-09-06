@@ -7,11 +7,7 @@ datasource db {
   url      = "file:dev.sqlite"
 }
 
-enum EntryType {
-  JOURNAL
-  GRATITUDE
-  CHECKIN
-}
+// SQLite doesn't support enums, using String instead
 
 model User {
   id            String   @id @default(cuid())
@@ -37,9 +33,9 @@ model Entry {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  type      EntryType
+  type      String   // "JOURNAL", "GRATITUDE", "CHECKIN"
   content   String   // free text for JOURNAL or GRATITUDE, JSON string for CHECKIN summary if needed
-  meta      Json?
+  meta      String?  // JSON string instead of Json type for SQLite compatibility
   createdAt DateTime @default(now())
 }
 
