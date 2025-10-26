@@ -39,6 +39,15 @@
 - [ ] Closing message appears after Save in module
 - [ ] No duplicate greetings on navigation
 
+## Module Micro-Flows (Milestone 4)
+- [ ] Check-in: Sliders work, data saves, reflection appears
+- [ ] Journal: Autosave works (10s), character counter shows, data persists
+- [ ] Gratitude: Multiple inputs work, saves only filled items
+- [ ] Progress: Streak tracks correctly, resets if >24h since last
+- [ ] All modules persist across page refresh
+- [ ] All modules completable with keyboard only (Tab/Enter)
+- [ ] Character limits enforced (Journal: 500, Gratitude: 100/item, Progress: 150)
+
 ## Additional Checks
 - [ ] No TypeScript errors
 - [ ] No ESLint errors

@@ -56,11 +56,35 @@ const Chat = () => {
   };
 
   const handleModuleSave = (module: string) => {
+    const { storage } = require('../services/storage');
+    
+    let reflection = '';
+    
+    // Generate reflections based on saved data
+    if (module === 'checkin') {
+      const latest = storage.getJson<any>('checkin', 'latest', null);
+      if (latest) {
+        const avg = (latest.mood + latest.energy + latest.stress) / 3;
+        if (avg > 5) {
+          reflection = "You're doing well across the board. ";
+        } else if (avg < 3) {
+          reflection = "It sounds like you're having a tough time. ";
+        } else {
+          reflection = "You're somewhere in the middle. ";
+        }
+      }
+    } else if (module === 'progress') {
+      const latest = storage.getJson<any>('progress', 'latest', null);
+      if (latest && latest.streak > 0) {
+        reflection = `You're on a ${latest.streak}-day streak! `;
+      }
+    }
+    
     const closing = getClosing(module, closingIndex);
     const nextStep = getNextStep(module);
 
     addMessage({
-      content: `${closing} ${nextStep}`,
+      content: `${reflection}${closing} ${nextStep}`,
       sender: 'avatar',
       type: 'text'
     });
