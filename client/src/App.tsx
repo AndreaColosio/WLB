@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AvatarChat from './components/AvatarChat';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
 import './App.module.css';
 
 const queryClient = new QueryClient({
@@ -14,9 +15,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="app">
-        <AvatarChat />
-      </div>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 }

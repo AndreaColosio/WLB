@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useGamification } from '../hooks/useApi';
 import { useConversationState, ConversationMessage, MessageAnalysis } from '../hooks/useConversationState';
 import ResultCards from './ResultCards';
