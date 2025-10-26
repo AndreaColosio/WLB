@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import AvatarChat from '../components/AvatarChat';
+import Chat from '../pages/Chat';
 import Today from '../pages/Today';
 import Journal from '../pages/Journal';
 import Gratitude from '../pages/Gratitude';
@@ -14,7 +14,11 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <AvatarChat />,
+        element: <Chat />,
+      },
+      {
+        path: 'chat',
+        element: <Chat />,
       },
       {
         path: 'today',
