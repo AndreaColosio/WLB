@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
-export type ConversationState = 'idle' | 'listening' | 'transcribing' | 'analyzing' | 'reviewing' | 'saved';
+export type ConversationState = 'idle' | 'listening' | 'transcribing' | 'analyzing' | 'reviewing' | 'saved' | 'module';
 
 export interface MessageAnalysis {
   intents: string[];
@@ -47,6 +47,14 @@ export const useConversationState = () => {
   const [currentAnalysis, setCurrentAnalysis] = useState<MessageAnalysis | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingType, setRecordingType] = useState<'voice' | 'video' | null>(null);
+  const [activeModule, setActiveModule] = useState<string | null>(null);
+  const hasShownGreetingRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasShownGreetingRef.current && messages.length === 0) {
+      hasShownGreetingRef.current = true;
+    }
+  }, [messages]);
 
   const addMessage = useCallback((message: Omit<ConversationMessage, 'id' | 'timestamp'>) => {
     const newMessage: ConversationMessage = {
@@ -104,12 +112,19 @@ export const useConversationState = () => {
     setRecordingType(null);
   }, []);
 
+  const openModule = useCallback((module: string | null) => {
+    setActiveModule(module);
+    setState(module ? 'module' : 'idle');
+  }, []);
+
   return {
     state,
     messages,
     currentAnalysis,
     isRecording,
     recordingType,
+    activeModule,
+    hasShownGreeting: hasShownGreetingRef.current,
     addMessage,
     updateMessage,
     startRecording,
@@ -119,5 +134,6 @@ export const useConversationState = () => {
     saveResults,
     skipResults,
     reset,
+    setActiveModule: openModule,
   };
 };

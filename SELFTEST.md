@@ -1,4 +1,4 @@
-# Milestone 1 & 2 Self-Test Checklist
+# Milestones 1, 2 & 3 Self-Test Checklist
 
 ## Routes Mount Without Errors (Milestone 1 & 2)
 - [ ] App starts without console errors
@@ -30,6 +30,14 @@
 - [ ] Chat.tsx composes AvatarChat component
 - [ ] Chat page renders without errors
 - [ ] All chat functionality works (send messages, receive responses, etc.)
+
+## Chat Experience (Milestone 3)
+- [ ] Greeting appears once on first open (not on subsequent opens)
+- [ ] Avatar canvas displays (sphere, 45-55vh on mobile)
+- [ ] Intent routing works ("I feel tired" → Check-in, "I want to write" → Journal, "I'm grateful" → Gratitude, "small win" → Progress)
+- [ ] Quick chips trigger modules correctly
+- [ ] Closing message appears after Save in module
+- [ ] No duplicate greetings on navigation
 
 ## Additional Checks
 - [ ] No TypeScript errors
