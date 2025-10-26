@@ -1,14 +1,9 @@
 import { useState, KeyboardEvent } from 'react';
-import { Mic } from 'lucide-react';
 
-interface InputDockProps {
-  onSend: (message: string) => void;
-}
-
-const InputDock = ({ onSend }: InputDockProps) => {
+export default function InputDock({ onSend }: { onSend: (message: string) => void }) {
   const [message, setMessage] = useState('');
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -16,32 +11,38 @@ const InputDock = ({ onSend }: InputDockProps) => {
   };
 
   const handleSend = () => {
-    if (message.trim()) {
-      onSend(message.trim());
-      setMessage('');
-    }
+    const text = message.trim();
+    if (text.length === 0) return;
+    onSend(text);
+    setMessage('');
   };
 
   return (
-    <div className="border-t p-4 bg-white">
-      <div className="flex gap-2 items-end">
+    <div className="fixed bottom-0 left-0 right-0 border-t border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
+      <div className="mx-auto flex max-w-screen-sm items-end gap-2 px-4 py-3 md:py-4">
         <textarea
+          rows={1}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Share what's on your mind..."
-          className="flex-1 min-h-[60px] max-h-[120px] p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
-          rows={2}
+          onKeyDown={handleKeyDown}
+          placeholder="Write a message…"
+          className="flex-1 resize-none rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 shadow-[var(--shadow)] focus:outline-none focus:ring-2 focus:ring-gray-300"
         />
         <button
-          onClick={() => console.log('Mic pressed')}
-          className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          aria-label="Voice input"
+          className="h-11 w-11 shrink-0 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] shadow-sm"
         >
-          <Mic className="w-5 h-5" />
+          🎤
+        </button>
+        <button
+          aria-label="Send message"
+          onClick={handleSend}
+          disabled={!message.trim()}
+          className="h-11 w-11 shrink-0 rounded-[var(--radius)] bg-[var(--text)] text-[var(--bg)] disabled:opacity-50"
+        >
+          ➤
         </button>
       </div>
     </div>
   );
-};
-
-export default InputDock;
+}

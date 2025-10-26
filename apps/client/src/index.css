@@ -8,9 +8,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
   min-height: 100vh;
-  color: #1e293b;
 }
 
 html {
@@ -62,6 +60,17 @@ html {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
+
+/* Design tokens */
+:root[data-theme="light"]{
+  --bg:#fff; --surface:#f7f7f7; --text:#111; --muted:#6b7280;
+  --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06); --radius:14px;
+}
+:root[data-theme="dark"]{
+  --bg:#000; --surface:#0f0f0f; --text:#f5f5f5; --muted:#a3a3a3;
+  --border:#1f1f1f; --shadow:0 6px 18px rgba(0,0,0,.35); --radius:14px;
+}
+html,body{background:var(--bg);color:var(--text);} 
 
 /* Utility classes */
 .flex { display: flex; }

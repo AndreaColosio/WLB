@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import TopBar from '../components/TopBar';
 import AvatarCanvas from '../components/AvatarCanvas';
 import ChatPane from '../components/ChatPane';
 import InputDock from '../components/InputDock';
-import QuickChips from '../components/QuickChips';
 import ModuleCheckIn from '../components/modules/ModuleCheckIn';
 import ModuleJournal from '../components/modules/ModuleJournal';
 import ModuleGratitude from '../components/modules/ModuleGratitude';
@@ -54,6 +54,16 @@ const Chat = () => {
   const handleModuleSelect = (module: string) => {
     setActiveModule(module);
   };
+
+  // Listen for actions from the hamburger menu
+  useEffect(() => {
+    const handler = (e: any) => {
+      const k = e?.detail as string;
+      if (k) setActiveModule(k);
+    };
+    window.addEventListener('ba:action', handler);
+    return () => window.removeEventListener('ba:action', handler);
+  }, [setActiveModule]);
 
   const handleModuleSave = (module: string) => {
     const { storage } = require('../services/storage');
@@ -118,28 +128,44 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <AvatarCanvas />
-      <ChatPane>
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] p-3 rounded-lg ${
-                msg.sender === 'user'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-900'
-              }`}
-            >
-              {msg.content}
-            </div>
-          </div>
-        ))}
-        {renderModule()}
-      </ChatPane>
-      {state === 'idle' && <QuickChips onSelect={handleModuleSelect} />}
+    <div className="relative mx-auto max-w-screen-sm">
+      <TopBar />
+
+      <main className="px-4 pt-3 pb-[7.5rem] md:pt-5">
+        <section className="flex items-center justify-center">
+          <AvatarCanvas />
+        </section>
+
+        <section className="mt-4 text-center">
+          <p className="text-lg font-medium">How are you feeling right now?</p>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Open the menu to start a check-in, journal, gratitude, or progress.
+          </p>
+        </section>
+
+        <section className="mt-4">
+          <ChatPane>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                    msg.sender === 'user'
+                      ? 'bg-[var(--surface)] shadow'
+                      : 'border border-[var(--border)] bg-[var(--bg)]'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {renderModule()}
+          </ChatPane>
+        </section>
+      </main>
+
       <InputDock onSend={handleSend} />
     </div>
   );

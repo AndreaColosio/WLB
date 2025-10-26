@@ -1,22 +1,16 @@
 import { useEffect, useRef } from 'react';
 
-interface ChatPaneProps {
-  children: React.ReactNode;
-}
-
-const ChatPane = ({ children }: ChatPaneProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+export default function ChatPane({ children }: { children: React.ReactNode }) {
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [children]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="space-y-2">
       {children}
-      <div ref={scrollRef} />
+      <div ref={endRef} />
     </div>
   );
-};
-
-export default ChatPane;
+}
