@@ -65,11 +65,24 @@ if not exist "apps\client\node_modules" (
 REM Create .env file if it doesn't exist
 if not exist ".env" (
     echo [INFO] Creating .env file...
-    echo # Balance Agent Environment Variables > .env
-    echo OPENAI_API_KEY=your_openai_api_key_here >> .env
-    echo OPENAI_MODEL=gpt-4o-mini >> .env
+    echo # Server Configuration > .env
     echo PORT=3001 >> .env
     echo NODE_ENV=development >> .env
+    echo. >> .env
+    echo # Database >> .env
+    echo # SQLite is used by default for development (file:dev.sqlite) >> .env
+    echo # For production, use PostgreSQL: >> .env
+    echo # DATABASE_URL=postgresql://user:password@localhost:5432/balance_agent >> .env
+    echo. >> .env
+    echo # OpenAI Configuration >> .env
+    echo OPENAI_API_KEY=your_openai_api_key_here >> .env
+    echo OPENAI_MODEL=gpt-4o-mini >> .env
+    echo. >> .env
+    echo # JWT Authentication >> .env
+    echo # IMPORTANT: Change this to a secure random string in production! >> .env
+    echo # Generate one with: openssl rand -base64 32 >> .env
+    echo JWT_SECRET=your-secret-key-change-this-in-production >> .env
+    echo JWT_EXPIRES_IN=7d >> .env
     echo [WARNING] Created .env file. Please add your OpenAI API key.
 )
 
