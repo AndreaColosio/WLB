@@ -3,6 +3,7 @@ import TopBar from '../components/TopBar';
 import AvatarCanvas from '../components/AvatarCanvas';
 import ChatPane from '../components/ChatPane';
 import InputDock from '../components/InputDock';
+import TypingIndicator from '../components/TypingIndicator';
 import ModuleCheckIn from '../components/modules/ModuleCheckIn';
 import ModuleJournal from '../components/modules/ModuleJournal';
 import ModuleGratitude from '../components/modules/ModuleGratitude';
@@ -161,6 +162,11 @@ const Chat = () => {
                 </div>
               </div>
             ))}
+            {state !== 'idle' && !activeModule && (
+              <div className="flex justify-start">
+                <TypingIndicator />
+              </div>
+            )}
             {renderModule()}
           </ChatPane>
         </section>
