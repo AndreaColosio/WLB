@@ -96,6 +96,20 @@ User Input → AI Analysis → Result Cards → User Review → Save to Database
 - **Achievement Badges** - First entry, 7-day streak, 30 gratitudes
 - **Progress Analytics** - Weekly summaries and trends
 
+## 🏗️ Recent Architecture Improvements
+
+**New!** The codebase has been significantly improved for production-readiness:
+
+- ✅ **Single ORM (Prisma)** - Removed Drizzle, consolidated to Prisma only
+- 🔐 **JWT Authentication** - Secure user authentication with bcrypt
+- 🛡️ **Error Handling** - Standardized error responses across all endpoints
+- ⚙️ **Environment Validation** - Type-safe, validated environment variables
+- 🧪 **Testing Infrastructure** - Vitest setup with sample tests
+- 🚦 **Rate Limiting** - Protection against abuse with AI-specific limits
+- 💰 **Cost Tracking** - OpenAI token usage monitoring
+
+📖 **[Read the full Architecture Improvements Guide](./ARCHITECTURE_IMPROVEMENTS.md)**
+
 ## 🔧 Development
 
 ### Project Structure
@@ -115,16 +129,26 @@ npm run dev              # Start both server and client
 npm run dev:server       # Start only backend
 npm run dev:client       # Start only frontend
 npm run build            # Build for production
+npm run test             # Run tests
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Run tests with coverage report
 npm run install:all      # Install all dependencies
 ```
 
 ### Environment Variables
 ```bash
+# Required
 OPENAI_API_KEY=your_key_here
+
+# Optional (with defaults)
 OPENAI_MODEL=gpt-4o-mini
-PORT=5050
+PORT=3001
 NODE_ENV=development
+JWT_SECRET=your-secret-key-change-this-in-production
+JWT_EXPIRES_IN=7d
 ```
+
+See `.env.example` for complete list and documentation.
 
 ## 🎯 User Experience
 

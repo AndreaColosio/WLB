@@ -2,8 +2,12 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { prisma } from "./lib/prisma.js";
+import { env } from "./config/env.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { apiLimiter, authLimiter, aiLimiter } from "./middleware/rateLimiter.js";
 
 // Import routes
+import authRouter from "./routes/auth.js";
 import entriesRouter from "./routes/entries.js";
 import checkinsRouter from "./routes/checkins.js";
 import agentRouter from "./routes/agent.js";
@@ -13,6 +17,9 @@ import chatRouter from "./routes/chat.js";
 import saveRouter from "./routes/save.js";
 
 const app = express();
+
+console.log('🔧 Environment:', env.NODE_ENV);
+console.log('🤖 OpenAI Model:', env.OPENAI_MODEL);
 
 // CORS setup for client origin
 app.use(cors({ 
@@ -24,28 +31,35 @@ app.use(cors({
 
 app.use(express.json());
 
-// Health check
-app.get("/api/health", (_, res) => res.json({ ok: true }));
+// Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
+
+// Health check (no auth required)
+app.get("/api/health", (_, res) => res.json({ ok: true, timestamp: new Date().toISOString() }));
 
 // Mount routes
+// Auth routes with stricter rate limiting
+app.use("/api/auth", authLimiter, authRouter);
+
+// Protected routes (require authentication)
+// Note: Individual routes need to add authMiddleware where needed
 app.use("/api/entries", entriesRouter);
 app.use("/api/checkins", checkinsRouter);
-app.use("/api/agent", agentRouter);
 app.use("/api/gamification", gamificationRouter);
 app.use("/api/summary", summaryRouter);
-app.use("/api/chat", chatRouter);
 app.use("/api/save", saveRouter);
 
-// Error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("Server error:", err);
-  res.status(500).json({ error: "Internal server error" });
-});
+// AI routes with cost control rate limiting
+app.use("/api/agent", aiLimiter, agentRouter);
+app.use("/api/chat", aiLimiter, chatRouter);
 
-const port = Number(process.env.PORT || 3001);
-app.listen(port, "0.0.0.0", () => {
-  console.log(`🚀 Balance Agent Server listening on http://localhost:${port}`);
-  console.log(`📊 Health check: http://localhost:${port}/api/health`);
+// Error handler (must be last)
+app.use(errorHandler);
+
+app.listen(env.PORT, "0.0.0.0", () => {
+  console.log(`🚀 Balance Agent Server listening on http://localhost:${env.PORT}`);
+  console.log(`📊 Health check: http://localhost:${env.PORT}/api/health`);
+  console.log(`🔐 Auth endpoints: /api/auth/signup, /api/auth/login, /api/auth/me`);
 });
 
 // Graceful shutdown
