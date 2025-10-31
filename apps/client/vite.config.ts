@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
-    open: true,
+    open: false, // Disabled: launcher scripts handle browser opening
     strictPort: true
   },
   preview: {
