@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
-import Layout from '../components/layout/Layout';
-import Chat from '../pages/Chat';
+import Layout from '../components/modern/Layout';
+import NewChat from '../pages/NewChat';
 import Today from '../pages/Today';
 import Journal from '../pages/Journal';
 import Gratitude from '../pages/Gratitude';
@@ -14,11 +14,11 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Chat />,
+        element: <NewChat />,
       },
       {
         path: 'chat',
-        element: <Chat />,
+        element: <NewChat />,
       },
       {
         path: 'today',
