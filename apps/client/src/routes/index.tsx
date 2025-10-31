@@ -1,10 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/modern/Layout';
 import NewChat from '../pages/NewChat';
-import Today from '../pages/Today';
-import Journal from '../pages/Journal';
-import Gratitude from '../pages/Gratitude';
-import Progress from '../pages/Progress';
+import NewJournal from '../pages/NewJournal';
+import NewGratitude from '../pages/NewGratitude';
+import NewProgress from '../pages/NewProgress';
 import NotFound from '../pages/not-found';
 
 export const router = createBrowserRouter([
@@ -21,20 +20,16 @@ export const router = createBrowserRouter([
         element: <NewChat />,
       },
       {
-        path: 'today',
-        element: <Today selectedDate={new Date()} onStreakUpdate={() => {}} />,
-      },
-      {
         path: 'journal',
-        element: <Journal selectedDate={new Date()} />,
+        element: <NewJournal />,
       },
       {
         path: 'gratitude',
-        element: <Gratitude selectedDate={new Date()} />,
+        element: <NewGratitude />,
       },
       {
         path: 'progress',
-        element: <Progress />,
+        element: <NewProgress />,
       },
     ],
   },

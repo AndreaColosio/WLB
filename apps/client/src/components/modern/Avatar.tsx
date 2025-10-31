@@ -39,9 +39,11 @@ interface AvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showPersonality?: boolean;
   onClick?: () => void;
+  isActive?: boolean; // When talking or responding
+  isSpeaking?: boolean; // When the assistant is speaking
 }
 
-export default function Avatar({ size = 'lg', showPersonality = true, onClick }: AvatarProps) {
+export default function Avatar({ size = 'lg', showPersonality = true, onClick, isActive = false, isSpeaking = false }: AvatarProps) {
   const { personality } = useTheme();
   const config = personalityConfig[personality];
   const Icon = config.icon;
@@ -75,9 +77,70 @@ export default function Avatar({ size = 'lg', showPersonality = true, onClick }:
           damping: 20
         }}
       >
-        {/* Avatar Circle with Gradient */}
+        {/* Animated Glow Waves - Blue, Purple, Orange */}
+        {(isActive || isSpeaking) && (
+          <>
+            {/* Wave 1 - Light Blue */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(147, 197, 253, 0.4) 0%, transparent 70%)',
+              }}
+              animate={{
+                scale: [1, 1.4, 1],
+                opacity: [0.6, 0.2, 0.6],
+                rotate: [0, 180, 360],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            {/* Wave 2 - Purple */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, transparent 70%)',
+              }}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.5, 0.1, 0.5],
+                rotate: [360, 180, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5,
+              }}
+            />
+
+            {/* Wave 3 - Orange */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(251, 146, 60, 0.3) 0%, transparent 70%)',
+              }}
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.4, 0.15, 0.4],
+                rotate: [0, -180, -360],
+              }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
+            />
+          </>
+        )}
+
+        {/* Main Avatar Circle with Cloud-Moving Effect */}
         <motion.div
-          className={`${sizeClasses[size]} rounded-full bg-gradient-to-br ${config.color} flex items-center justify-center shadow-2xl avatar-glow`}
+          className={`${sizeClasses[size]} rounded-full bg-gradient-to-br ${config.color} flex items-center justify-center shadow-2xl relative overflow-hidden`}
           animate={{
             boxShadow: [
               '0 0 30px rgba(124, 58, 237, 0.3), 0 0 60px rgba(124, 58, 237, 0.15)',
@@ -91,7 +154,53 @@ export default function Avatar({ size = 'lg', showPersonality = true, onClick }:
             ease: "easeInOut",
           }}
         >
-          <Icon className={`${iconSizes[size]} text-white`} />
+          {/* Cloud-Moving Effect - Animated Overlay */}
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: `
+                radial-gradient(ellipse 80% 50% at 20% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse 80% 50% at 80% 60%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 50% 40%, rgba(255, 255, 255, 0.15) 0%, transparent 50%)
+              `,
+            }}
+            animate={{
+              x: ['-20%', '20%', '-20%'],
+              y: ['-10%', '10%', '-10%'],
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
+          {/* Floating clouds effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: `
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.15) 0%, transparent 35%)
+              `,
+            }}
+            animate={{
+              x: ['0%', '15%', '0%'],
+              y: ['0%', '-15%', '0%'],
+              rotate: [0, 15, 0],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+          />
+
+          {/* Icon */}
+          <Icon className={`${iconSizes[size]} text-white relative z-10`} />
         </motion.div>
 
         {/* Online Status Indicator */}

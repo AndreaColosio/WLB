@@ -4,6 +4,7 @@ import Avatar from '../components/modern/Avatar';
 import ChatMessage from '../components/modern/ChatMessage';
 import InputArea from '../components/modern/InputArea';
 import PersonalitySelector from '../components/modern/PersonalitySelector';
+import { ChatService } from '../services/chatService';
 
 interface Message {
   id: string;
@@ -17,6 +18,7 @@ export default function NewChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
   const [showPersonalitySelector, setShowPersonalitySelector] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false); // For avatar glow when user types
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasShownInitialGreeting = useRef(false);
 
@@ -49,6 +51,7 @@ export default function NewChat() {
   const handleSendMessage = async (content: string) => {
     // Hide greeting after first message
     setShowGreeting(false);
+    setIsUserTyping(false);
 
     // Add user message
     const userMessage: Message = {
@@ -61,20 +64,26 @@ export default function NewChat() {
     setIsLoading(true);
 
     try {
-      // TODO: Connect to your actual chat API
-      // For now, simulate a response
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Connect to actual chat API
+      const response = await ChatService.sendMessage(content, messages);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: "Thank you for sharing that with me. I'm here to listen and support you. What else would you like to talk about?",
+        content: response.reflection || response.message || "Thank you for sharing that with me. I'm here to listen and support you.",
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -99,6 +108,8 @@ export default function NewChat() {
                   size="xl"
                   showPersonality={true}
                   onClick={() => setShowPersonalitySelector(true)}
+                  isActive={isUserTyping}
+                  isSpeaking={isLoading}
                 />
               </motion.div>
             )}
@@ -116,6 +127,8 @@ export default function NewChat() {
                 size="md"
                 showPersonality={false}
                 onClick={() => setShowPersonalitySelector(true)}
+                isActive={isUserTyping}
+                isSpeaking={isLoading}
               />
             </motion.div>
           )}
@@ -193,6 +206,7 @@ export default function NewChat() {
         onSend={handleSendMessage}
         isLoading={isLoading}
         placeholder="Share how you're feeling..."
+        onTypingChange={setIsUserTyping}
       />
 
       {/* Personality Selector Modal */}

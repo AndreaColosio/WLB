@@ -6,20 +6,45 @@ interface InputAreaProps {
   onSend: (message: string) => void;
   isLoading?: boolean;
   placeholder?: string;
+  onTypingChange?: (isTyping: boolean) => void; // Callback for typing state
 }
 
-export default function InputArea({ onSend, isLoading = false, placeholder = "Share how you're feeling..." }: InputAreaProps) {
+export default function InputArea({ onSend, isLoading = false, placeholder = "Share how you're feeling...", onTypingChange }: InputAreaProps) {
   const [message, setMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-resize textarea
+  // Auto-resize textarea and track typing
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
     }
-  }, [message]);
+
+    // Track typing state
+    if (message.trim()) {
+      onTypingChange?.(true);
+
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set new timeout to stop typing after 1 second of inactivity
+      typingTimeoutRef.current = setTimeout(() => {
+        onTypingChange?.(false);
+      }, 1000);
+    } else {
+      onTypingChange?.(false);
+    }
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [message, onTypingChange]);
 
   const handleSend = () => {
     if (message.trim() && !isLoading) {
