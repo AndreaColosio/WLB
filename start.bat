@@ -24,6 +24,13 @@ if not exist "node_modules" (
     call npm install
     cd ..\..
     echo ✅ Dependencies installed!
+    echo.
+)
+
+REM Setup Prisma mock (needed in restricted environments)
+if not exist "apps\server\node_modules\.prisma\client\index.js" (
+    echo 🔧 Setting up Prisma client...
+    call setup-prisma-mock.bat
 )
 
 echo 🎯 Starting both servers...

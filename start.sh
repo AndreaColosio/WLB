@@ -20,6 +20,13 @@ if [ ! -d "node_modules" ] || [ ! -d "apps/server/node_modules" ] || [ ! -d "app
     cd apps/server && npm install && cd ../..
     cd apps/client && npm install && cd ../..
     echo "✅ Dependencies installed!"
+    echo ""
+fi
+
+# Setup Prisma mock (needed in restricted environments)
+if [ ! -f "apps/server/node_modules/.prisma/client/index.js" ]; then
+    echo "🔧 Setting up Prisma client..."
+    ./setup-prisma-mock.sh
 fi
 
 echo "🎯 Starting both servers..."
