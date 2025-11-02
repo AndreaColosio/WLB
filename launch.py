@@ -128,11 +128,24 @@ class BalanceAgentLauncher:
         env_file = self.root_dir / ".env"
         if not env_file.exists():
             self.print_status("Creating .env file...")
-            env_content = """# Balance Agent Environment Variables
+            env_content = """# Server Configuration
+PORT=3001
+NODE_ENV=development
+
+# Database
+# SQLite is used by default for development (file:dev.sqlite)
+# For production, use PostgreSQL:
+# DATABASE_URL=postgresql://user:password@localhost:5432/balance_agent
+
+# OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-4o-mini
-PORT=5050
-NODE_ENV=development
+
+# JWT Authentication
+# IMPORTANT: Change this to a secure random string in production!
+# Generate one with: openssl rand -base64 32
+JWT_SECRET=your-secret-key-change-this-in-production
+JWT_EXPIRES_IN=7d
 """
             env_file.write_text(env_content)
             self.print_status("Created .env file. Please add your OpenAI API key.", "WARNING")
@@ -157,7 +170,7 @@ NODE_ENV=development
             # Wait a moment to see if server starts successfully
             time.sleep(2)
             if process.poll() is None:
-                self.print_status("Backend server started on http://localhost:5050", "SUCCESS")
+                self.print_status("Backend server started on http://localhost:3001", "SUCCESS")
                 return process
             else:
                 self.print_status("Failed to start backend server", "ERROR")
@@ -265,7 +278,7 @@ NODE_ENV=development
         # Print status
         print(f"\n{Colors.OKGREEN}{Colors.BOLD}🚀 Balance Agent is running!{Colors.ENDC}")
         print(f"{Colors.OKCYAN}📱 Frontend: http://localhost:5173{Colors.ENDC}")
-        print(f"{Colors.OKCYAN}🔧 Backend:  http://localhost:5050{Colors.ENDC}")
+        print(f"{Colors.OKCYAN}🔧 Backend:  http://localhost:3001{Colors.ENDC}")
         print(f"\n{Colors.WARNING}Press Ctrl+C to stop{Colors.ENDC}\n")
         
         # Keep running
