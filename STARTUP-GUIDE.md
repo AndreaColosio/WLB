@@ -8,47 +8,34 @@
 
 ## 🎯 Quick Start (Recommended)
 
-### Method 1: Use the Launch Script
-1. **Double-click** `quick-start.bat` in your project folder
-2. **Wait** for two command windows to open (Backend & Frontend)
-3. **Wait** for the browser to automatically open to `http://localhost:5173`
-4. **Enjoy** your avatar-first Balance Agent!
+### Method 1: Double-click `quick-start.bat`
+1. **Run** `quick-start.bat` from your project folder.
+2. The helper verifies Node.js, creates `.env` from `.env.example` if needed, installs dependencies, and opens a new terminal running `npm run dev`.
+3. Your default browser (Chrome if it's your default) opens to `http://localhost:5173` once the frontend is ready.
+4. Leave the new terminal window open while you use the app.
 
-### Method 2: Manual Startup (If scripts don't work)
+### Method 2: Use a single command prompt
 
-#### Step 1: Open Command Prompt
-- Press `Win + R`
-- Type `cmd` and press Enter
-
-#### Step 2: Navigate to Project
-```cmd
-cd "C:\Users\41795\OneDrive\Documents\WLB\WLB"
-```
-
-#### Step 3: Start Backend Server
-```cmd
-cd apps\server
-npm run dev
-```
-- **Keep this window open**
-- You should see: `🚀 Balance Agent Server listening on http://localhost:3001`
-
-#### Step 4: Open New Command Prompt
-- Press `Win + R` again
-- Type `cmd` and press Enter
-
-#### Step 5: Start Frontend Client
-```cmd
-cd "C:\Users\41795\OneDrive\Documents\WLB\WLB\apps\client"
-npm run dev
-```
-- **Keep this window open**
-- You should see: `Local: http://localhost:5173/`
-
-#### Step 6: Open Chrome
-- Open Chrome browser
-- Go to: `http://localhost:5173`
-- You should see the beautiful avatar-first interface!
+1. **Open** Command Prompt (`Win + R`, then type `cmd`).
+2. **Navigate** to the repo (example path shown—adjust to your machine):
+   ```cmd
+   cd "C:\Users\41795\OneDrive\Documents\WLB\WLB"
+   ```
+3. **Install dependencies** (first run or after pulling big changes):
+   ```cmd
+   npm run install:all
+   ```
+4. **Copy the env file** if it doesn't exist yet:
+   ```cmd
+   copy .env.example .env
+   ```
+5. **Start everything with one command**:
+   ```cmd
+   npm run dev
+   ```
+6. **Open Chrome** and go to `http://localhost:5173`.
+   - Backend API health check lives at `http://localhost:3001/api/health`.
+   - Leave the terminal running; press `Ctrl + C` to stop.
 
 ## 🔧 Troubleshooting
 
@@ -74,9 +61,9 @@ npm install
 ```
 
 ### If Still Not Working
-1. **Close all command windows**
-2. **Run** `test-launch.bat` to check system requirements
-3. **Try** `launch.bat` for full diagnostic startup
+1. **Close all command windows** so `npm run dev` stops completely.
+2. **Run** `node --version` and `npm --version` to confirm both are available.
+3. **Re-run** `npm run install:all` to refresh dependencies, then start again with `npm run dev` or `quick-start.bat`.
 
 ## 🌐 Access Points
 - **Frontend**: http://localhost:5173 (Main app)

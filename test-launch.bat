@@ -57,7 +57,7 @@ if not exist "apps\server\package.json" (
 )
 
 echo.
-echo [SUCCESS] All tests passed! You can run launch.bat now.
+echo [SUCCESS] All tests passed! You can launch the app with quick-start.bat or npm run dev now.
 echo.
 pause
 exit /b 0

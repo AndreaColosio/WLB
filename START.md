@@ -19,12 +19,14 @@ cd ../client && npm install
 cd ../..
 ```
 
+> 💡 **Shortcut on Windows:** Double-click `quick-start.bat`. It runs these setup checks automatically before launching the app.
+
 ### 3️⃣ Start the app
 ```bash
 npm run dev
 ```
 
-That's it! The app will open at http://localhost:5173
+That's it! When you see both processes running, open http://localhost:5173 in your browser.
 
 ---
 
@@ -67,7 +69,7 @@ Which starts:
 - **Backend** on http://localhost:3001
 - **Frontend** on http://localhost:5173
 
-Your browser should open automatically to the frontend.
+If you used `quick-start.bat`, a new browser tab opens for you. Otherwise, visit the URL manually.
 
 ---
 

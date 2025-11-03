@@ -15,48 +15,33 @@ The user never has to jump between modules. The agent turns raw conversation int
 
 ## 🚀 Quick Start
 
-### Option 1: Smart Launcher (Recommended)
+The entire stack runs from the root `npm` scripts. In most cases you only need three commands:
 
-**Windows:**
-```bash
-launch.bat
-```
-
-**Linux/Mac:**
-```bash
-python3 launch.py
-```
-
-The launcher will:
-- ✅ Check system requirements
-- 📦 Install all dependencies
-- 🔧 Set up environment variables
-- 🚀 Start both server and client
-- 🌐 Open the app in your browser
-
-### Option 2: Manual Setup
-
-1. **Install dependencies:**
+1. **Install dependencies (first run only)**
    ```bash
-   npm install
-   cd apps/server && npm install
-   cd ../client && npm install
+   npm run install:all
    ```
 
-2. **Set up environment:**
+2. **Create your environment file**
    ```bash
    cp .env.example .env
-   # Edit .env with your OPENAI_API_KEY
+   # Add your OPENAI_API_KEY before using AI features
    ```
 
-3. **Start development servers:**
+3. **Start both servers**
    ```bash
    npm run dev
    ```
 
-4. **Open the app:**
-   - Frontend: http://localhost:5173
-   - Backend: http://localhost:5050
+This launches the backend on **http://localhost:3001** and the Vite frontend on **http://localhost:5173** with hot reload enabled.
+
+> 💡 **Windows shortcut:** Double-click `quick-start.bat` to run the same flow. The helper checks for Node.js, ensures dependencies are installed, runs `npm run dev` in a new terminal window, and opens the app in your default browser.
+
+### Troubleshooting the first run
+
+- **Port in use?** Stop other Node/Vite processes (`taskkill /F /IM node.exe` on Windows, `pkill node` on macOS/Linux) and retry `npm run dev`.
+- **Missing `.env`?** Copy `.env.example` again and add your OpenAI key. Without it the app boots, but AI responses stay in demo mode.
+- **Dependencies stale?** Re-run `npm run install:all` after pulling changes.
 
 ## 🏗️ Architecture
 
@@ -118,8 +103,7 @@ WLB/
 ├── apps/
 │   ├── client/          # React frontend
 │   └── server/          # Node.js backend
-├── launch.py            # Python launcher script
-├── launch.bat           # Windows launcher script
+├── quick-start.bat      # Optional Windows helper (wraps npm run dev)
 └── README.md
 ```
 
@@ -189,7 +173,7 @@ The app is designed mobile-first with a maximum width container to simulate a ph
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test with the launcher
+4. Verify with `npm run dev`
 5. Submit a pull request
 
 ## 📄 License
