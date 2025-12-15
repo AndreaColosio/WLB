@@ -77,5 +77,5 @@ Progress.tsx   NewProgress.tsx
 - [x] Delete `server/` directory ✓ DONE
 - [x] Delete `New*.tsx` page duplicates ✓ DONE (kept New*, renamed to standard names)
 - [x] Delete `components/layout/` directory ✓ DONE (96 lines, unused)
-- [ ] Remove `wouter` from package.json (use react-router-dom only)
+- [x] Remove `wouter` from package.json ✓ DONE (react-router-dom is used)
 - [ ] Delete `components/ThemeContext.tsx` (keep `contexts/ThemeContext`)
