@@ -74,7 +74,7 @@ Progress.tsx   NewProgress.tsx
 5. **No clear entry point** - Root has server code + apps have server code
 
 ## Quick Wins (< 30 min each)
-- [ ] Delete `server/` directory
+- [x] Delete `server/` directory ✓ DONE
 - [ ] Delete `New*.tsx` page duplicates
 - [ ] Remove `wouter` from package.json (use react-router-dom only)
 - [ ] Delete `components/ThemeContext.tsx` (keep `contexts/ThemeContext`)
