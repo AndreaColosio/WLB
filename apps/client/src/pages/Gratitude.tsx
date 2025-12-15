@@ -1,147 +1,54 @@
-import React, { useState } from 'react';
-import { useEntries, useCreateEntry, useGamification } from '../hooks/useApi';
-import styles from '../App.module.css';
+import { motion } from 'framer-motion';
+import { Heart, Sparkles } from 'lucide-react';
 
-const Gratitude: React.FC = () => {
-  const [newGratitude, setNewGratitude] = useState('');
-  const { data: entries, isLoading } = useEntries('GRATITUDE');
-  const { data: gamificationData } = useGamification();
-  const createEntry = useCreateEntry();
-
-  const handleSave = async () => {
-    if (!newGratitude.trim()) return;
-
-    try {
-      await createEntry.mutateAsync({
-        type: 'GRATITUDE',
-        content: newGratitude.trim(),
-      });
-      setNewGratitude('');
-    } catch (error) {
-      console.error('Error saving gratitude entry:', error);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return `Today, ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday, ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
-    } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    }
-  };
-
-  const getThisWeekCount = () => {
-    if (!entries) return 0;
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    return entries.filter(entry => new Date(entry.createdAt) > oneWeekAgo).length;
-  };
-
+export default function NewGratitude() {
   return (
-    <div className={styles.gratitudeTab}>
-      <div className={styles.tabContent}>
-        <div className={styles.gratitudeStats}>
-          <div className={styles.gratitudeStatsContent}>
-            <div className={styles.gratitudeStatsHeader}>
-              <div>
-                <h3>Gratitude Practice</h3>
-                <p>Keep building your positive mindset</p>
-              </div>
-              <div className={styles.gratitudeStreak}>
-                <div className={styles.gratitudeStreakNumber} data-testid="gratitude-streak">
-                  {gamificationData?.streakDays || 0}
-                </div>
-                <div className={styles.gratitudeStreakLabel}>day streak</div>
-              </div>
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+              <Heart className="w-6 h-6 text-white" />
             </div>
-            
-            <div className={styles.gratitudeCounts}>
-              <div className={styles.gratitudeCount}>
-                <div className={styles.gratitudeCountNumber} data-testid="total-gratitude-count">
-                  {entries?.length || 0}
-                </div>
-                <div className={styles.gratitudeCountLabel}>Total</div>
-              </div>
-              <div className={styles.gratitudeCount}>
-                <div className={styles.gratitudeCountNumber} data-testid="weekly-gratitude-count">
-                  {getThisWeekCount()}
-                </div>
-                <div className={styles.gratitudeCountLabel}>This week</div>
-              </div>
+            <div>
+              <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">Gratitude</h1>
+              <p className="text-sm text-light-muted dark:text-dark-muted">Count your blessings</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className={styles.card}>
-          <h3 className={styles.sectionTitle}>
-            <i className="fas fa-heart" style={{ color: '#f59e0b' }}></i>
-            Add Gratitude
-          </h3>
-          
-          <div className={styles.newEntryContent}>
-            <input
-              type="text"
-              value={newGratitude}
-              onChange={(e) => setNewGratitude(e.target.value)}
-              placeholder="I'm grateful for..."
-              className={styles.input}
-              onKeyPress={(e) => e.key === 'Enter' && handleSave()}
-              data-testid="new-gratitude-input"
-            />
-            
-            <button
-              onClick={handleSave}
-              disabled={!newGratitude.trim() || createEntry.isPending}
-              className={styles.secondaryButton}
-              data-testid="save-gratitude-button"
-            >
-              {createEntry.isPending ? 'Saving...' : 'Add to Gratitude List'}
-            </button>
+        {/* Coming Soon Message */}
+        <motion.div
+          className="text-center py-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-light-surface dark:bg-dark-surface flex items-center justify-center border border-light-border dark:border-dark-border">
+            <Sparkles className="w-12 h-12 text-light-muted dark:text-dark-muted" />
           </div>
-        </div>
-
-        <div className={styles.entriesSection}>
-          <h3 className={styles.sectionTitle}>Recent Gratitudes</h3>
-          
-          {isLoading ? (
-            <div className={styles.loading}>Loading gratitudes...</div>
-          ) : entries?.length ? (
-            <div className={styles.gratitudeList}>
-              {entries.map((entry) => (
-                <div key={entry.id} className={styles.gratitudeItem} data-testid={`gratitude-entry-${entry.id}`}>
-                  <div className={styles.gratitudeItemContent}>
-                    <i className="fas fa-heart" style={{ color: '#f59e0b' }}></i>
-                    <div className={styles.gratitudeItemText}>
-                      <p data-testid={`gratitude-content-${entry.id}`}>{entry.content}</p>
-                      <span className={styles.gratitudeItemDate}>
-                        {formatDate(entry.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <p>No gratitudes yet. Start building your appreciation practice!</p>
-            </div>
-          )}
-        </div>
+          <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text mb-3">
+            Gratitude Journal
+          </h2>
+          <p className="text-light-muted dark:text-dark-muted max-w-md mx-auto mb-6">
+            Your gratitude entries will appear here. Share what you're grateful for in the Chat, and it will be automatically recorded.
+          </p>
+          <motion.a
+            href="/chat"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-accent-purple hover:bg-accent-purple/90 text-white rounded-full font-medium transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Heart className="w-5 h-5" />
+            Express Gratitude in Chat
+          </motion.a>
+        </motion.div>
       </div>
     </div>
   );
-};
-
-export default Gratitude;
+}

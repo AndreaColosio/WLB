@@ -1,180 +1,219 @@
-import { useState, useEffect } from 'react';
-import TopBar from '../components/TopBar';
-import AvatarCanvas from '../components/AvatarCanvas';
-import ChatPane from '../components/ChatPane';
-import InputDock from '../components/InputDock';
-import TypingIndicator from '../components/TypingIndicator';
-import ModuleCheckIn from '../components/modules/ModuleCheckIn';
-import ModuleJournal from '../components/modules/ModuleJournal';
-import ModuleGratitude from '../components/modules/ModuleGratitude';
-import ModuleProgress from '../components/modules/ModuleProgress';
-import { useConversationState } from '../hooks/useConversationState';
-import { detectIntent } from '../services/intent';
-import { getGreeting, getClosing, getNextStep } from '../services/convo';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Avatar from '../components/modern/Avatar';
+import ChatMessage from '../components/modern/ChatMessage';
+import InputArea from '../components/modern/InputArea';
+import PersonalitySelector from '../components/modern/PersonalitySelector';
+import { ChatService } from '../services/chatService';
 
-const Chat = () => {
-  const {
-    state,
-    messages,
-    activeModule,
-    hasShownGreeting,
-    addMessage,
-    setActiveModule,
-  } = useConversationState();
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
 
-  const [closingIndex, setClosingIndex] = useState(0);
+export default function NewChat() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showGreeting, setShowGreeting] = useState(true);
+  const [showPersonalitySelector, setShowPersonalitySelector] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false); // For avatar glow when user types
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasShownInitialGreeting = useRef(false);
+
+  // Auto-scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    if (!hasShownGreeting && messages.length === 0) {
-      setTimeout(() => {
-        addMessage({
-          content: getGreeting(0),
-          sender: 'avatar',
-          type: 'text'
-        });
-      }, 500);
-    }
-  }, [hasShownGreeting, messages.length, addMessage]);
+    scrollToBottom();
+  }, [messages]);
 
-  const handleSend = (text: string) => {
-    addMessage({
-      content: text,
-      sender: 'user',
-      type: 'text'
-    });
-
-    const intent = detectIntent(text);
-
-    if (intent !== 'unknown' && intent !== 'smalltalk') {
-      setTimeout(() => {
-        setActiveModule(intent);
-      }, 300);
-    }
-  };
-
-  const handleModuleSelect = (module: string) => {
-    setActiveModule(module);
-  };
-
-  // Listen for actions from the hamburger menu
+  // Show initial greeting
   useEffect(() => {
-    const handler = (e: any) => {
-      const k = e?.detail as string;
-      if (k) setActiveModule(k);
-    };
-    window.addEventListener('ba:action', handler);
-    return () => window.removeEventListener('ba:action', handler);
-  }, [setActiveModule]);
-
-  const handleModuleSave = (module: string) => {
-    const { storage } = require('../services/storage');
-    
-    let reflection = '';
-    
-    // Generate reflections based on saved data
-    if (module === 'checkin') {
-      const latest = storage.getJson<any>('checkin', 'latest', null);
-      if (latest) {
-        const avg = (latest.mood + latest.energy + latest.stress) / 3;
-        if (avg > 5) {
-          reflection = "You're doing well across the board. ";
-        } else if (avg < 3) {
-          reflection = "It sounds like you're having a tough time. ";
-        } else {
-          reflection = "You're somewhere in the middle. ";
-        }
-      }
-    } else if (module === 'progress') {
-      const latest = storage.getJson<any>('progress', 'latest', null);
-      if (latest && latest.streak > 0) {
-        reflection = `You're on a ${latest.streak}-day streak! `;
-      }
+    if (!hasShownInitialGreeting.current && messages.length === 0) {
+      hasShownInitialGreeting.current = true;
+      setTimeout(() => {
+        const greeting: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: "Hello! I'm your Balance Agent. I'm here to support you on your wellness journey. How are you feeling today?",
+          timestamp: new Date(),
+        };
+        setMessages([greeting]);
+        setTimeout(() => setShowGreeting(false), 3000);
+      }, 1000);
     }
-    
-    const closing = getClosing(module, closingIndex);
-    const nextStep = getNextStep(module);
+  }, [messages.length]);
 
-    addMessage({
-      content: `${reflection}${closing} ${nextStep}`,
-      sender: 'avatar',
-      type: 'text'
-    });
+  const handleSendMessage = async (content: string) => {
+    // Hide greeting after first message
+    setShowGreeting(false);
+    setIsUserTyping(false);
 
-    setClosingIndex(prev => prev + 1);
-    setActiveModule(null);
-  };
-
-  const handleModuleClose = () => {
-    setActiveModule(null);
-  };
-
-  const renderModule = () => {
-    const moduleProps = {
-      onSave: () => handleModuleSave(activeModule!),
-      onClose: handleModuleClose,
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content,
+      timestamp: new Date(),
     };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
-    switch (activeModule) {
-      case 'checkin':
-        return <ModuleCheckIn {...moduleProps} />;
-      case 'journal':
-        return <ModuleJournal {...moduleProps} />;
-      case 'gratitude':
-        return <ModuleGratitude {...moduleProps} />;
-      case 'progress':
-        return <ModuleProgress {...moduleProps} />;
-      default:
-        return null;
+    try {
+      // Connect to actual chat API
+      const response = await ChatService.sendMessage(content, messages);
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response.reflection || response.message || "Thank you for sharing that with me. I'm here to listen and support you.",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative mx-auto max-w-screen-sm">
-      <TopBar />
-
-      <main className="px-4 pt-3 pb-[7.5rem] md:pt-5">
-        <section className="flex items-center justify-center">
-          <AvatarCanvas />
-        </section>
-
-        <section className="mt-4 text-center">
-          <p className="text-lg font-medium">How are you feeling right now?</p>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Open the menu to start a check-in, journal, gratitude, or progress.
-          </p>
-        </section>
-
-        <section className="mt-4">
-          <ChatPane>
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+    <div className="h-screen flex flex-col relative">
+      {/* Main Chat Area */}
+      <div className="flex-1 overflow-y-auto pb-32 md:pb-36">
+        <div className="max-w-chat mx-auto px-4 py-8">
+          {/* Avatar Section */}
+          <AnimatePresence>
+            {showGreeting && (
+              <motion.div
+                className="flex justify-center mb-8 mt-4"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
               >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
-                    msg.sender === 'user'
-                      ? 'bg-[var(--surface)] shadow'
-                      : 'border border-[var(--border)] bg-[var(--bg)]'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-            {state !== 'idle' && !activeModule && (
-              <div className="flex justify-start">
-                <TypingIndicator />
-              </div>
+                <Avatar
+                  size="xl"
+                  showPersonality={true}
+                  onClick={() => setShowPersonalitySelector(true)}
+                  isActive={isUserTyping}
+                  isSpeaking={isLoading}
+                />
+              </motion.div>
             )}
-            {renderModule()}
-          </ChatPane>
-        </section>
-      </main>
+          </AnimatePresence>
 
-      <InputDock onSend={handleSend} />
+          {/* Compact Avatar (after first interaction) */}
+          {!showGreeting && messages.length > 0 && (
+            <motion.div
+              className="flex justify-center mb-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Avatar
+                size="md"
+                showPersonality={false}
+                onClick={() => setShowPersonalitySelector(true)}
+                isActive={isUserTyping}
+                isSpeaking={isLoading}
+              />
+            </motion.div>
+          )}
+
+          {/* Welcome Message (before any messages) */}
+          {messages.length === 0 && (
+            <motion.div
+              className="text-center mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <h1 className="text-2xl md:text-3xl font-bold text-light-text dark:text-dark-text mb-3">
+                Welcome to Your Balance Space
+              </h1>
+              <p className="text-light-muted dark:text-dark-muted max-w-md mx-auto">
+                Share your thoughts, feelings, or anything on your mind. I'm here to listen and guide you.
+              </p>
+            </motion.div>
+          )}
+
+          {/* Messages */}
+          <div className="space-y-1">
+            {messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                role={message.role}
+                content={message.content}
+                timestamp={message.timestamp}
+              />
+            ))}
+
+            {/* Typing Indicator */}
+            {isLoading && (
+              <motion.div
+                className="flex gap-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-md">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                  >
+                    ✨
+                  </motion.div>
+                </div>
+                <div className="message-assistant flex items-center gap-1">
+                  <motion.div
+                    className="w-2 h-2 bg-accent-purple rounded-full"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                  />
+                  <motion.div
+                    className="w-2 h-2 bg-accent-purple rounded-full"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                  />
+                  <motion.div
+                    className="w-2 h-2 bg-accent-purple rounded-full"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Input Area */}
+      <InputArea
+        onSend={handleSendMessage}
+        isLoading={isLoading}
+        placeholder="Share how you're feeling..."
+        onTypingChange={setIsUserTyping}
+      />
+
+      {/* Personality Selector Modal */}
+      <PersonalitySelector
+        isOpen={showPersonalitySelector}
+        onClose={() => setShowPersonalitySelector(false)}
+      />
     </div>
   );
-};
-
-export default Chat;
+}

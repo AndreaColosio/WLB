@@ -1,148 +1,54 @@
-import React from 'react';
-import { useWeeklySummary, useGamification } from '../hooks/useApi';
-import styles from '../App.module.css';
+import { motion } from 'framer-motion';
+import { TrendingUp, Activity } from 'lucide-react';
 
-const Progress: React.FC = () => {
-  const { data: summary, isLoading: summaryLoading } = useWeeklySummary();
-  const { data: gamificationData } = useGamification();
-
-  const getBadgeInfo = (code: string) => {
-    const badges: Record<string, { icon: string; name: string; description: string }> = {
-      FIRST_ENTRY: { 
-        icon: 'fas fa-star', 
-        name: 'First Entry', 
-        description: 'Created your first entry' 
-      },
-      WEEK_STREAK_7: { 
-        icon: 'fas fa-fire', 
-        name: '7-Day Streak', 
-        description: 'Practiced for 7 consecutive days' 
-      },
-      GRATITUDE_30: { 
-        icon: 'fas fa-heart', 
-        name: '30 Gratitudes', 
-        description: 'Expressed gratitude 30 times' 
-      },
-    };
-    return badges[code] || { icon: 'fas fa-trophy', name: code, description: 'Achievement unlocked' };
-  };
-
-  const earnedBadgeCodes = gamificationData?.badges.map(b => b.code) || [];
-  const allBadges = ['FIRST_ENTRY', 'WEEK_STREAK_7', 'GRATITUDE_30'];
-
-  const getGratitudeProgress = () => {
-    if (!summary) return { current: 0, target: 30 };
-    const gratitudeCount = summary.gratitude || 0;
-    return { current: Math.min(gratitudeCount, 30), target: 30 };
-  };
-
+export default function NewProgress() {
   return (
-    <div className={styles.progressTab}>
-      <div className={styles.tabContent}>
-        <div className={styles.card}>
-          <h3 className={styles.sectionTitle}>
-            <i className="fas fa-calendar-week"></i>
-            This Week
-          </h3>
-          
-          {summaryLoading ? (
-            <div className={styles.loading}>Loading summary...</div>
-          ) : summary ? (
-            <div className={styles.weeklyStats}>
-              <div className={styles.statCard}>
-                <div className={styles.statNumber} data-testid="weekly-journal-count">
-                  {summary.journal}
-                </div>
-                <div className={styles.statLabel}>Journal Entries</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statNumber} data-testid="weekly-gratitude-count">
-                  {summary.gratitude}
-                </div>
-                <div className={styles.statLabel}>Gratitudes</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statNumber} data-testid="weekly-avg-balance">
-                  {summary.avgScore?.toFixed(1) || 'N/A'}
-                </div>
-                <div className={styles.statLabel}>Avg Balance</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statNumber} data-testid="weekly-streak-days">
-                  {summary.streakDays}
-                </div>
-                <div className={styles.statLabel}>Streak Days</div>
-              </div>
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-white" />
             </div>
-          ) : (
-            <div className={styles.emptyState}>Unable to load weekly summary</div>
-          )}
-        </div>
-
-        <div className={styles.card}>
-          <h3 className={styles.sectionTitle}>Balance Score Trend</h3>
-          <div className={styles.chartContainer}>
-            <svg width="280" height="60" viewBox="0 0 280 60" className={styles.sparkline}>
-              <path 
-                d="M 10 45 L 50 35 L 90 40 L 130 25 L 170 30 L 210 20 L 250 25" 
-                className={styles.sparklinePath}
-              />
-              <circle cx="250" cy="25" r="3" fill="hsl(142.1, 76.2%, 36.3%)" />
-            </svg>
-          </div>
-          <div className={styles.chartLabels}>
-            <span>7 days ago</span>
-            <span>Today</span>
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <h3 className={styles.sectionTitle}>
-            <i className="fas fa-trophy" style={{ color: '#f59e0b' }}></i>
-            Achievements
-          </h3>
-          
-          <div className={styles.badgesGrid}>
-            {allBadges.map((badgeCode) => {
-              const badgeInfo = getBadgeInfo(badgeCode);
-              const isEarned = earnedBadgeCodes.includes(badgeCode);
-              const gratitudeProgress = getGratitudeProgress();
-              
-              return (
-                <div 
-                  key={badgeCode} 
-                  className={`${styles.badge} ${isEarned ? styles.badgeEarned : styles.badgeUnearned}`}
-                  data-testid={`badge-${badgeCode.toLowerCase()}`}
-                >
-                  <i className={`${badgeInfo.icon} ${styles.badgeIcon}`}></i>
-                  <div className={styles.badgeName}>{badgeInfo.name}</div>
-                  <div className={styles.badgeStatus}>
-                    {isEarned ? 'Earned' : 
-                      badgeCode === 'GRATITUDE_30' ? 
-                        `${gratitudeProgress.current}/${gratitudeProgress.target}` : 
-                        'Locked'
-                    }
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className={styles.insightsCard}>
-          <div className={styles.insightsContent}>
-            <div className={styles.insightsHeader}>
-              <i className="fas fa-lightbulb"></i>
-              <h3>Insights</h3>
+            <div>
+              <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">Progress</h1>
+              <p className="text-sm text-light-muted dark:text-dark-muted">Track your wellness journey</p>
             </div>
-            <p data-testid="progress-insights">
-              You're building a beautiful practice! Your consistency this week shows real commitment to your wellbeing. Keep reflecting and growing.
-            </p>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Coming Soon Message */}
+        <motion.div
+          className="text-center py-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-light-surface dark:bg-dark-surface flex items-center justify-center border border-light-border dark:border-dark-border">
+            <Activity className="w-12 h-12 text-light-muted dark:text-dark-muted" />
+          </div>
+          <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text mb-3">
+            Your Progress Dashboard
+          </h2>
+          <p className="text-light-muted dark:text-dark-muted max-w-md mx-auto mb-6">
+            Your wellness metrics and progress will be visualized here. Keep chatting with your Balance Agent to build your history!
+          </p>
+          <motion.a
+            href="/chat"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-accent-purple hover:bg-accent-purple/90 text-white rounded-full font-medium transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <TrendingUp className="w-5 h-5" />
+            Continue in Chat
+          </motion.a>
+        </motion.div>
       </div>
     </div>
   );
-};
-
-export default Progress;
+}

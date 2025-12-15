@@ -1,9 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/modern/Layout';
-import NewChat from '../pages/NewChat';
-import NewJournal from '../pages/NewJournal';
-import NewGratitude from '../pages/NewGratitude';
-import NewProgress from '../pages/NewProgress';
+import Chat from '../pages/Chat';
+import Journal from '../pages/Journal';
+import Gratitude from '../pages/Gratitude';
+import Progress from '../pages/Progress';
 import NotFound from '../pages/not-found';
 
 export const router = createBrowserRouter([
@@ -13,23 +13,23 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <NewChat />,
+        element: <Chat />,
       },
       {
         path: 'chat',
-        element: <NewChat />,
+        element: <Chat />,
       },
       {
         path: 'journal',
-        element: <NewJournal />,
+        element: <Journal />,
       },
       {
         path: 'gratitude',
-        element: <NewGratitude />,
+        element: <Gratitude />,
       },
       {
         path: 'progress',
-        element: <NewProgress />,
+        element: <Progress />,
       },
     ],
   },
